@@ -15,7 +15,7 @@ def install_dependencies(mmcv_path=None):
         # Install foundational libraries
         os.system('python -m pip install -U pip')  # Upgrade pip
         os.system('python -m pip install openmim')  # Install OpenMIM
-        os.system('python -m mim install "mmcv>=2.0.0"')
+        #os.system('python -m mim install "mmcv>=2.0.0"')
         os.system('python -m mim install "mmengine==0.8.2"')
         os.system('python -m mim install "mmdet>=3.0.0"')
 
@@ -31,6 +31,8 @@ print("Setup complete!")
 
 import mmcv
 from mmdet.apis import inference_detector, init_detector
+from mmdet.utils import register_all_modules
+from mmdet.visualization import DetLocalVisualizer
 
 def load_image(image_path):
     """Load image from a file."""
@@ -51,13 +53,21 @@ def detect_and_visualize(detector, image_path, output_path, bbox_thr=0.3):
     # Perform object detection
     results = inference_detector(detector, img)
 
+    # Initialize the visualizer
+    visualizer = DetLocalVisualizer()
+    visualizer.dataset_meta = detector.dataset_meta
+
     # Visualize results
-    detector.show_result(
-        img,
-        results,
-        score_thr=bbox_thr,
-        out_file=output_path
+    visualizer.add_datasample(
+        name="result",
+        image=img,
+        data_sample=results,
+        out_file=output_path,
+        draw_pred=True,
+        pred_score_thr=bbox_thr
     )
+
+    print(f"Results saved to {output_path}")
 
 if __name__ == "__main__":
     # Paths to config and checkpoint files
