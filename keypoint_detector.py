@@ -60,15 +60,33 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, bbox
 
     # Perform object detection
     det_results = inference_detector(detector, img)
-    bboxes = det_results.pred_instances.cpu().numpy()
+    bboxes = det_results.pred_instances.bboxes.cpu().numpy()
+    scores = det_results.pred_instances.scores.cpu().numpy()
+
+    # Debugging: Print raw bounding boxes and scores
+    print("Bounding boxes:", bboxes)
+    print("Scores:", scores)
 
     # Filter bounding boxes by score threshold
-    valid_bboxes = bboxes[bboxes[:, -1] > bbox_thr]
+    valid_bboxes = bboxes[scores > bbox_thr]
+
+     # Debugging: Print filtered bounding boxes
+    print("Filtered bounding boxes:", valid_bboxes)
+
+    # Convert valid_bboxes into the required format for inference_topdown
+    formatted_bboxes = [{'bbox': bbox.tolist()} for bbox in valid_bboxes]
+
+    # Debugging: Print formatted bounding boxes
+    print("Formatted bounding boxes for pose estimation:", formatted_bboxes)
+
+    # Check if there are any valid bounding boxes
+    if not formatted_bboxes:
+        print("No valid bounding boxes found. Skipping pose estimation.")
+        return
 
     # Perform keypoint detection
-    pose_results = inference_topdown(pose_estimator, img, valid_bboxes[:, :-1])
-    data_samples = merge_data_samples(pose_results
-                                      )
+    pose_results = inference_topdown(pose_estimator, img, formatted_bboxes)
+    data_samples = merge_data_samples(pose_results)
     # Initialize the visualizer
     det_visualizer = DetLocalVisualizer()
     det_visualizer.dataset_meta = detector.dataset_meta # Set dataset metadata
