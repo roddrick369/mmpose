@@ -53,7 +53,7 @@ def initialize_pose_estimator(config_path, checkpoint_path, device='cuda:0'):
     pose_estimator = init_pose_estimator(config_path, checkpoint_path, device=device)
     return pose_estimator
 
-def detect_and_visualize(detector, image_path, output_path, bbox_thr=0.3, kpt_thr=0.3):
+def detect_and_visualize(detector, pose_estimator, image_path, output_path, bbox_thr=0.3, kpt_thr=0.3):
     """Detect objects, perform keypoint detection, and visualize results."""
     # Load the image
     img = load_image(image_path)
@@ -111,8 +111,8 @@ if __name__ == "__main__":
     output_image_path = '/content/result_pose.jpg'
 
     print("Initializing the detector...")
-    detector = initialize_detector(det_config, det_checkpoint)
     pose_estimator = initialize_pose_estimator(pose_config, pose_checkpoint)
+    detector = initialize_detector(det_config, det_checkpoint)
 
     print("Processing the image")
     detect_and_visualize(detector, pose_estimator, input_image_path, output_image_path)
