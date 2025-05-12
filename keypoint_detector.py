@@ -97,10 +97,10 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
 
 
     # Convert valid_bboxes into the required format for inference_topdown
-    formatted_bboxes = [{'bbox': bbox.tolist()} for bbox in bboxes]
+    #formatted_bboxes = [{'bbox': bbox.tolist()} for bbox in bboxes]
 
     # Perform keypoint detection
-    pose_results = inference_topdown(pose_estimator, img, formatted_bboxes)
+    pose_results = inference_topdown(pose_estimator, img, bboxes)
     data_samples = merge_data_samples(pose_results)
 
     # Initialize the visualizer
