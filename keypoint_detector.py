@@ -142,7 +142,6 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
         image=img,
         data_sample=data_samples,
         draw_pred=True,
-        pred_score_thr=args.kpt_thr,
         out_file=output_path
     )
 
