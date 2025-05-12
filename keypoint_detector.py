@@ -4,6 +4,15 @@ import sys
 print("Python usado:", sys.executable)
 print("Versão:", sys.version)
 
+class Args:
+    def __init__(self):
+        self.det_cat_id = 0  # Category ID for detection (e.g., 0 for person)
+        self.bbox_thr = 0.3  # Bounding box score threshold
+        self.nms_thr = 0.3   # IoU threshold for NMS
+        self.kpt_thr = 0.3   # Keypoint score threshold
+
+args = Args()
+
 def install_dependencies(mmcv_path=None):
     # Install required libraries using OpenMIM
     if mmcv_path:
@@ -53,40 +62,47 @@ def initialize_pose_estimator(config_path, checkpoint_path, device='cuda:0'):
     pose_estimator = init_pose_estimator(config_path, checkpoint_path, device=device)
     return pose_estimator
 
-def detect_and_visualize(detector, pose_estimator, image_path, output_path, bbox_thr=0.3, kpt_thr=0.3):
+def detect_and_visualize(detector, pose_estimator, image_path, output_path, args):
     """Detect objects, perform keypoint detection, and visualize results."""
+    import numpy as np
+    from mmpose.evaluation.functional import nms
+
     # Load the image
     img = load_image(image_path)
 
     # Perform object detection
-    det_results = inference_detector(detector, img)
-    bboxes = det_results.pred_instances.bboxes.cpu().numpy()
-    scores = det_results.pred_instances.scores.cpu().numpy()
+    det_result = inference_detector(detector, img)
+    pred_instance = det_result.pred_instances.cpu().numpy()
 
-    # Debugging: Print raw bounding boxes and scores
-    print("Bounding boxes:", bboxes)
-    print("Scores:", scores)
+     # Combine bounding boxes and scores
+    if pred_instance.bboxes.size > 0 and pred_instance.scores.size > 0:
+        bboxes = np.concatenate(
+            (pred_instance.bboxes, pred_instance.scores[:, None]), axis=1)
+    else:
+        bboxes = np.array([])
 
-    # Filter bounding boxes by score threshold
-    valid_bboxes = bboxes[scores > bbox_thr]
+    # Filter bounding boxes by class ID and score threshold
+    if bboxes.size > 0:
+        bboxes = bboxes[np.logical_and(pred_instance.labels == args.det_cat_id,
+                                       pred_instance.scores > args.bbox_thr)]
 
-     # Debugging: Print filtered bounding boxes
-    print("Filtered bounding boxes:", valid_bboxes)
+    # Apply Non-Maximum Suppression (NMS)
+    if bboxes.size > 0:
+        bboxes = bboxes[nms(bboxes, args.nms_thr), :4]
 
-    # Convert valid_bboxes into the required format for inference_topdown
-    formatted_bboxes = [{'bbox': bbox.tolist()} for bbox in valid_bboxes]
-
-    # Debugging: Print formatted bounding boxes
-    print("Formatted bounding boxes for pose estimation:", formatted_bboxes)
-
-    # Check if there are any valid bounding boxes
-    if not formatted_bboxes:
+    # Validate bounding boxes
+    if bboxes is None or bboxes.size == 0:
         print("No valid bounding boxes found. Skipping pose estimation.")
         return
+
+
+    # Convert valid_bboxes into the required format for inference_topdown
+    formatted_bboxes = [{'bbox': bbox.tolist()} for bbox in bboxes]
 
     # Perform keypoint detection
     pose_results = inference_topdown(pose_estimator, img, formatted_bboxes)
     data_samples = merge_data_samples(pose_results)
+
     # Initialize the visualizer
     det_visualizer = DetLocalVisualizer()
     det_visualizer.dataset_meta = detector.dataset_meta # Set dataset metadata
@@ -95,10 +111,10 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, bbox
     det_img = det_visualizer.add_datasample(
         name="detection_result",
         image=img,
-        data_sample=det_results,
-        out_file=output_path,
+        data_sample=det_result,
+        out_file=None,
         draw_pred=True,
-        pred_score_thr=bbox_thr
+        pred_score_thr=args.bbox_thr
     )
 
     # Overlay keypoints on the detection visualization
@@ -109,7 +125,7 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, bbox
         image=det_img,
         data_sample=data_samples,
         draw_pred=True,
-        pred_score_thr=kpt_thr,
+        pred_score_thr=args.kpt_thr,
         out_file=output_path
     )
 
@@ -133,6 +149,6 @@ if __name__ == "__main__":
     detector = initialize_detector(det_config, det_checkpoint)
 
     print("Processing the image")
-    detect_and_visualize(detector, pose_estimator, input_image_path, output_image_path)
+    detect_and_visualize(detector, pose_estimator, input_image_path, output_image_path, args)
 
     print("Done!")
