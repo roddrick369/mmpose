@@ -10,6 +10,9 @@ class Args:
         self.bbox_thr = 0.3  # Bounding box score threshold
         self.nms_thr = 0.3   # IoU threshold for NMS
         self.kpt_thr = 0.3   # Keypoint score threshold
+        self.radius = 6      # Keypoint radius
+        self.alpha = 0.8     # Transparency of bounding boxes
+        self.thickness = 3   # Skeleton line thickness
 
 args = Args()
 
@@ -117,12 +120,26 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
         pred_score_thr=args.bbox_thr
     )
 
+    # Initialize visualizer
+    from mmpose.registry import VISUALIZERS
+
+    pose_estimator.cfg.visualizer.radius = args.radius
+    pose_estimator.cfg.visualizer.alpha = args.alpha
+    pose_estimator.cfg.visualizer.line_width = args.thickness
+    visualizer = VISUALIZERS.build(pose_estimator.cfg.visualizer)
+
+    # Set dataset metadata
+    visualizer.set_dataset_meta(
+        pose_estimator.dataset_meta, skeleton_style=args.skeleton_style)
+
     # Overlay keypoints on the detection visualization
-    pose_visualizer = DetLocalVisualizer()
-    pose_visualizer.dataset_meta = pose_estimator.cfg.data.test.dataset_meta
-    pose_visualizer.add_datasample(
+    #pose_visualizer = DetLocalVisualizer()
+    #pose_visualizer.dataset_meta = pose_estimator.cfg.data.test.dataset_meta
+
+    # Add visualization
+    visualizer.add_datasample(
         name="pose_result",
-        image=det_img,
+        image=img,
         data_sample=data_samples,
         draw_pred=True,
         pred_score_thr=args.kpt_thr,
