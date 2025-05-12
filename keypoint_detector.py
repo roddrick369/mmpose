@@ -130,7 +130,7 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
 
     # Set dataset metadata
     visualizer.set_dataset_meta(
-        pose_estimator.dataset_meta, skeleton_style='mmpose')
+        pose_estimator.dataset_meta, skeleton_style='openpose')
 
     # Overlay keypoints on the detection visualization
     #pose_visualizer = DetLocalVisualizer()
