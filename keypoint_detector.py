@@ -142,7 +142,8 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
         image=img,
         data_sample=data_samples,
         draw_pred=True,
-        out_file=output_path
+        out_file=output_path,
+        skeleton_style="openpose"
     )
 
     print(f"Results saved to {output_path}")
