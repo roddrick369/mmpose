@@ -139,7 +139,7 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
     # Add visualization
     visualizer.add_datasample(
         name="pose_result",
-        image=img,
+        image=None,
         data_sample=data_samples,
         draw_pred=True,
         out_file=output_path,
