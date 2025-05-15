@@ -119,7 +119,6 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
         name="detection_result",
         image=img,
         data_sample=det_result,
-        draw_gt=False,
         out_file=None,
         draw_pred=True,
         pred_score_thr=args.bbox_thr
@@ -146,6 +145,7 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
         name="pose_result",
         image=black_canvas,
         data_sample=data_samples,
+        draw_gt=False,
         draw_pred=True,
         out_file=output_path,
         skeleton_style="openpose"
