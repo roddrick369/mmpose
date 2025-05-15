@@ -119,6 +119,7 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
         name="detection_result",
         image=img,
         data_sample=det_result,
+        draw_gt=False,
         out_file=None,
         draw_pred=True,
         pred_score_thr=args.bbox_thr
