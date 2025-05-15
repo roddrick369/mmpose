@@ -73,6 +73,10 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
     # Load the image
     img = load_image(image_path)
 
+    # Create a blank canvas with same dimensions as the input image
+    canvas_height, canvas_width = img.shape[:2] # Get dimensions of the input image
+    black_canvas = np.zeros((canvas_height, canvas_width, 3), dtype=np.uint8)
+
     # Perform object detection
     det_result = inference_detector(detector, img)
     pred_instance = det_result.pred_instances.cpu().numpy()
@@ -139,7 +143,7 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
     # Add visualization
     visualizer.add_datasample(
         name="pose_result",
-        image=None,
+        image=black_canvas,
         data_sample=data_samples,
         draw_pred=True,
         out_file=output_path,
