@@ -1,5 +1,15 @@
 import os
 import sys
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+
+parser.add_argument('--input-type', choices=['image', 'video'], required=True, 
+                    help="Specify input type: 'image' for a single image, 'video' for video processing.")
+parser.add_argument('--input-path', type=str, required=True, help="Path to the input file (image or video).")
+parser.add_argument('--output-path', type=str, required=True, help="Path to the output file (image or video).")
+
+options = parser.parse_args()
 
 print("Python usado:", sys.executable)
 print("Versão:", sys.version)
