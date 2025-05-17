@@ -207,7 +207,7 @@ def video_process(det, p_estimator, input, output_path, args):
                 (frame_vis.shape[1], frame_vis.shape[0])
             )
         video_writer.write(mmcv.rgb2bgr(frame_vis))
-    video_writer.realese()
+    video_writer.release()
     cap.release()
     return output_file
 
