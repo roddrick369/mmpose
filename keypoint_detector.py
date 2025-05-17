@@ -199,8 +199,8 @@ def video_process(det, p_estimator, input, output_path, args):
         
         output_file = 'test.mp4'
         if video_writer is None:
-            fourcc = cv2.videoWriter_fourcc(*'mp4v')
-            video_writer = cv2.videoWriter(
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            video_writer = cv2.VideoWriter(
                 output_file,
                 fourcc,
                 25,
