@@ -166,7 +166,7 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
     return data_samples.get('pred_instances', None)
 
 def one_image_process(det, p_estimator, image_path, output_path, args):
-    detect_and_visualize(detector, pose_estimator, input_image_path, output_image_path, args)
+    detect_and_visualize(det, p_estimator, image_path, output_path, args)
 
 def video_process(det, p_estimator, input, output_path, args):
     import cv2
@@ -221,8 +221,8 @@ if __name__ == "__main__":
     pose_checkpoint = 'https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/rtmpose-l_simcc-body7_pt-body7_420e-384x288-3f5a1437_20230504.pth'
 
     # Input and output image paths
-    input_image_path = '/content/image1.jpg'
-    output_image_path = '/content/result_pose.jpg'
+    input_image_path = ''
+    output_image_path = ''
 
     print("Initializing the detector...")
     pose_estimator = initialize_pose_estimator(pose_config, pose_checkpoint)
@@ -233,6 +233,6 @@ if __name__ == "__main__":
         one_image_process(detector, pose_estimator, input_image_path, output_image_path, args)
     else:
         print("Processing the video")
-        video_process(detector, pose_estimator, input_image_path, output_image_path, args)
+        video_process(detector, pose_estimator, options.input_path, options.output_path, args)
 
     print("Done!")
