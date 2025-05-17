@@ -163,6 +163,54 @@ def detect_and_visualize(detector, pose_estimator, image_path, output_path, args
 
     print(f"Results saved to {output_path}")
 
+    return data_samples.get('pred_instances', None)
+
+def one_image_process(det, p_estimator, image_path, output_path, args):
+    detect_and_visualize(detector, pose_estimator, input_image_path, output_image_path, args)
+
+def video_process(det, p_estimator, input, output_path, args):
+    import cv2
+    from mmpose.visualization import FastVisualizer
+
+    visualizer = FastVisualizer(
+        p_estimator.dataset_meta,
+        radius=args.radius,
+        line_width=args.thickness,
+        kpt_thr=args.kpt_thr
+    )
+
+    cap = cv2.VideoCaputre(input)
+
+    video_writer = None
+    frame_idx = 0
+
+    while cap.isOpened():
+        success, frame = cap.read()
+        frame_idx += 1
+
+        if not success:
+            break
+
+        pred_instances = detect_and_visualize(det, p_estimator, frame, output_path, args)
+
+        visualizer.draw_pose(frame, pred_instances)
+
+        frame_vis = frame.copy()[:, :, ::-1]
+        
+        output_file = 'test.mp4'
+        if video_writer is None:
+            fourcc = cv2.videoWriter_fourcc(*'mp4v')
+            video_writer = cv2.videoWriter(
+                output_file,
+                fourcc,
+                25,
+                (frame_vis.shape[1], frame_vis.shape[0])
+            )
+        video_writer.write(mmcv.rgb2bgr(frame_vis))
+    video_writer.realese()
+    cap.release()
+    return output_file
+
 if __name__ == "__main__":
     # Paths to config and checkpoint files
     det_config = 'projects/rtmpose/rtmdet/person/rtmdet_m_640-8xb32_coco-person.py'
@@ -181,6 +229,6 @@ if __name__ == "__main__":
     detector = initialize_detector(det_config, det_checkpoint)
 
     print("Processing the image")
-    detect_and_visualize(detector, pose_estimator, input_image_path, output_image_path, args)
+    one_image_process(detector, pose_estimator, input_image_path, output_image_path, args)
 
     print("Done!")
