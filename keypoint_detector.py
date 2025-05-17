@@ -179,7 +179,7 @@ def video_process(det, p_estimator, input, output_path, args):
         kpt_thr=args.kpt_thr
     )
 
-    cap = cv2.VideoCaputre(input)
+    cap = cv2.VideoCapture(input)
 
     video_writer = None
     frame_idx = 0
@@ -228,7 +228,11 @@ if __name__ == "__main__":
     pose_estimator = initialize_pose_estimator(pose_config, pose_checkpoint)
     detector = initialize_detector(det_config, det_checkpoint)
 
-    print("Processing the image")
-    one_image_process(detector, pose_estimator, input_image_path, output_image_path, args)
+    if options.input_type == 'image':
+        print("Processing the image")
+        one_image_process(detector, pose_estimator, input_image_path, output_image_path, args)
+    else:
+        print("Processing the video")
+        video_process(detector, pose_estimator, input_image_path, output_image_path, args)
 
     print("Done!")
