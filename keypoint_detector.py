@@ -224,7 +224,7 @@ def video_process(det, p_estimator, input, output_path, args):
                     (vis_frame.shape[1], vis_frame.shape[0])
                 )
             
-            video_writer.write(mmcv.rgb2bgr(frame_vis))
+            video_writer.write(mmcv.rgb2bgr(vis_frame))
 
         if video_writer is not None:
             video_writer.release()
