@@ -72,7 +72,7 @@ def load_image(image):
 def initialize_detector(config_path, checkpoint_path, device='cuda:0'):
     """Initialize the object detection model."""
     # Register all MMDetection modules
-    register_all_modules()
+    #register_all_modules()
     detector = init_detector(config_path, checkpoint_path, device=device)
     return detector
 
@@ -84,6 +84,8 @@ def initialize_pose_estimator(config_path, checkpoint_path, device='cuda:0'):
 def detect_and_visualize(detector, pose_estimator, image_path, output_path, args):
     """Detect objects, perform keypoint detection, and visualize results."""
     from mmpose.evaluation.functional import nms
+
+    register_all_modules(True)
 
     # Load the image
     img = load_image(image_path)
