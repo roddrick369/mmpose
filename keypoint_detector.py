@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy as np
 from argparse import ArgumentParser
 
 parser = ArgumentParser()
@@ -82,7 +83,6 @@ def initialize_pose_estimator(config_path, checkpoint_path, device='cuda:0'):
 
 def detect_and_visualize(detector, pose_estimator, image_path, output_path, args):
     """Detect objects, perform keypoint detection, and visualize results."""
-    import numpy as np
     from mmpose.evaluation.functional import nms
 
     # Load the image
