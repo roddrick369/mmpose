@@ -177,46 +177,59 @@ def one_image_process(det, p_estimator, image_path, output_path, args):
 
 def video_process(det, p_estimator, input, output_path, args):
     import cv2
-    from mmpose.visualization import FastVisualizer
+    import tempfile
+    # from mmpose.visualization import FastVisualizer
 
-    visualizer = FastVisualizer(
-        p_estimator.dataset_meta,
-        radius=args.radius,
-        line_width=args.thickness,
-        kpt_thr=args.kpt_thr
-    )
+    # visualizer = FastVisualizer(
+    #     p_estimator.dataset_meta,
+    #     radius=args.radius,
+    #     line_width=args.thickness,
+    #     kpt_thr=args.kpt_thr
+    # )
 
     cap = cv2.VideoCapture(input)
-
     video_writer = None
     frame_idx = 0
 
-    while cap.isOpened():
-        success, frame = cap.read()
-        frame_idx += 1
+    with tempfile.TemporaryDirectory() as tmpdir:
+        while cap.isOpened():
+            success, frame = cap.read()
+            if not success:
+                break
+            frame_idx += 1
 
-        if not success:
-            break
+            # pred_instances = detect_and_visualize(det, p_estimator, frame, output_path, args)
+            # visualizer.draw_pose(frame, pred_instances)
 
-        pred_instances = detect_and_visualize(det, p_estimator, frame, output_path, args)
+            # frame_vis = frame.copy()[:, :, ::-1]
+            
+            # output_file = 'test.mp4'
 
-        visualizer.draw_pose(frame, pred_instances)
+            # Read the visualized frame
 
-        frame_vis = frame.copy()[:, :, ::-1]
-        
-        output_file = 'test.mp4'
-        if video_writer is None:
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-            video_writer = cv2.VideoWriter(
-                output_file,
-                fourcc,
-                25,
-                (frame_vis.shape[1], frame_vis.shape[0])
-            )
-        video_writer.write(mmcv.rgb2bgr(frame_vis))
-    video_writer.release()
-    cap.release()
-    return output_file
+            # Save the visualized frame to a temp file
+            vis_frame_path = os.path.join(tmpdir, f'frame_{frame_idx:06d}.jpg')
+            detect_and_visualize(det, p_estimator, frame, vis_frame_path, args)
+
+            # Read the visualized frame
+            vis_frame = mmcv.imread(vis_frame_path)
+
+            # Initialize video writer if not already done
+            if video_writer is None:
+                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+                video_writer = cv2.VideoWriter(
+                    output_path,
+                    fourcc,
+                    25,
+                    (vis_frame.shape[1], vis_frame.shape[0])
+                )
+            
+            video_writer.write(mmcv.rgb2bgr(frame_vis))
+
+        if video_writer is not None:
+            video_writer.release()
+        cap.release()
+    return output_path
 
 if __name__ == "__main__":
     # Paths to config and checkpoint files
