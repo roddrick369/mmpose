@@ -57,11 +57,16 @@ from mmpose.structures import merge_data_samples
 from mmdet.utils import register_all_modules
 from mmdet.visualization import DetLocalVisualizer
 
-def load_image(image_path):
-    """Load image from a file."""
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Image file not found: {image_path}")
-    return mmcv.imread(image_path)
+def load_image(image):
+    """Load image from a file path or return it if already np.ndarray."""
+    if isinstance(image, str):
+        if not os.path.exists(image):
+            raise FileNotFoundError(f"Image file not found: {image}")
+        return mmcv.imread(image)
+    elif isinstance(image, np.ndarray):
+        return image
+    else:
+        raise TypeError("Expected image to be file path or NumPy array.")
 
 def initialize_detector(config_path, checkpoint_path, device='cuda:0'):
     """Initialize the object detection model."""
